@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}系统设置 - 政府信息检查系统{% endblock %}
+
+{% block content %}
+    <div class="layui-card">
+        <div class="layui-card-header">系统设置</div>
+        <div class="layui-card-body">
+            <form class="layui-form" action="{{ url_for('settings') }}" method="POST">
+                {{ form.hidden_tag() }}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">系统名称</label>
+                    <div class="layui-input-block">
+                        {{ form.system_name(class="layui-input") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">系统描述</label>
+                    <div class="layui-input-block">
+                        {{ form.system_description(class="layui-textarea") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">管理员邮箱</label>
+                    <div class="layui-input-block">
+                        {{ form.admin_email(class="layui-input") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="formDemo">保存设置</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    layui.use(['element', 'form', 'layer'], function() {
+        var element = layui.element;
+        var form = layui.form;
+        var layer = layui.layer;
+        
+        // 监听表单提交
+        form.on('submit(formDemo)', function(data) {
+            layer.msg(JSON.stringify(data.field));
+            return false;
+        });
+    });
+</script>
+{% endblock %}

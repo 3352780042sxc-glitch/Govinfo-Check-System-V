@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}用户管理 - 政企智能舆情分析报告生成智能体应用系统{% endblock %}
+
+{% block content %}
+    <div class="layui-card">
+        <div class="layui-card-header">用户管理</div>
+        <div class="layui-card-body">
+            <div class="layui-btn-container">
+                <a class="layui-btn layui-btn-primary" href="{{ url_for('user_add') }}"><i class="layui-icon layui-icon-add-circle"></i> 添加用户</a>
+            </div>
+            <table class="layui-table" lay-data="{id:'userTable', page:true, limit:10}" lay-filter="userTable">
+                <thead>
+                    <tr>
+                        <th lay-data="{field:'id', width:80}">ID</th>
+                        <th lay-data="{field:'username', width:150}">用户名</th>
+                        <th lay-data="{field:'role', width:150}">角色</th>
+                        <th lay-data="{field:'created_at', width:200}">创建时间</th>
+                        <th lay-data="{field:'action', width:200, toolbar:'#userBar'}">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.role.name }}</td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- 操作栏模板 -->
+    <script type="text/html" id="userBar">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    </script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    layui.use(['element', 'table', 'layer', 'form'], function() {
+        var element = layui.element;
+        var table = layui.table;
+        var layer = layui.layer;
+        var form = layui.form;
+        
+        // 渲染表格
+        table.render({
+            elem: '#userTable'
+        });
+        
+        // 监听工具条
+        table.on('tool(userTable)', function(obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                // 编辑用户
+                layer.msg('编辑用户：' + data.id);
+            } else if (obj.event === 'del') {
+                // 删除用户
+                layer.confirm('确定要删除该用户吗？', function(index) {
+                    layer.close(index);
+                    layer.msg('删除用户：' + data.id);
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
