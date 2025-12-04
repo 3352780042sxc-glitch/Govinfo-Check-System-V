@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}舆情分析系统 - 首页{% endblock %}
+
+{% block content %}
+<div class="layui-row layui-col-space15">
+    <!-- 系统简介 -->
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-header">系统简介</div>
+            <div class="layui-card-body">
+                <p>舆情分析系统是一个用于管理和分析舆情信息的平台，支持信息的添加、编辑、删除和查询功能。</p>
+                <p>本系统采用B/S架构，使用Python3、Flask框架和SQLite数据库开发，前端使用Layui组件库。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能入口 -->
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">信息管理</div>
+            <div class="layui-card-body">
+                <div class="layui-btn-container">
+                    <a href="{{ url_for('info_list') }}" class="layui-btn layui-btn-primary layui-btn-lg">
+                        <i class="layui-icon layui-icon-list"></i> 信息列表
+                    </a>
+                    <br><br>
+                    <a href="{{ url_for('info_add') }}" class="layui-btn layui-btn-primary layui-btn-lg">
+                        <i class="layui-icon layui-icon-add-circle"></i> 添加信息
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统统计 -->
+    <div class="layui-col-md6">
+        <div class="layui-card">
+            <div class="layui-card-header">系统统计</div>
+            <div class="layui-card-body">
+                <div class="layui-row layui-col-space10">
+                    <div class="layui-col-md6">
+                        <div class="layui-card layui-bg-blue">
+                            <div class="layui-card-body">
+                                <div class="layui-progress layui-progress-big" lay-showpercent="yes">
+                                    <div class="layui-progress-bar" lay-percent="100%"></div>
+                                </div>
+                                <p style="text-align: center; margin-top: 10px;">信息总数：{{ info_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-col-md6">
+                        <div class="layui-card layui-bg-green">
+                            <div class="layui-card-body">
+                                <div class="layui-progress layui-progress-big" lay-showpercent="yes">
+                                    <div class="layui-progress-bar" lay-percent="80%"></div>
+                                </div>
+                                <p style="text-align: center; margin-top: 10px;">已处理信息：{{ processed_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+layui.use('element', function(){
+    var element = layui.element;
+    
+    // 渲染进度条
+    element.render('progress');
+});
+</script>
+{% endblock %}

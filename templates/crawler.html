@@ -1,0 +1,447 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="layui-container">
+        <div class="layui-row">
+            <div class="layui-col-md12">
+                <h2 class="layui-text-center">数据抓取</h2>
+                
+                <!-- 抓取表单 -->
+                <div class="layui-card">
+                    <div class="layui-card-header">数据采集管理</div>
+                    <div class="layui-card-body">
+                        <form method="POST" action="" class="layui-form">
+                            {{ form.hidden_tag() }}
+                            <div class="layui-form-item">
+                                <div class="layui-col-md4">
+                                    <label class="layui-form-label">{{ form.keyword.label.text }}</label>
+                                    <div class="layui-input-block">
+                                        {{ form.keyword(class="layui-input") }}
+                                    </div>
+                                </div>
+                                <div class="layui-col-md2">
+                                    <label class="layui-form-label">{{ form.quantity.label.text }}</label>
+                                    <div class="layui-input-block">
+                                        {{ form.quantity(class="layui-input") }}
+                                    </div>
+                                </div>
+                                <div class="layui-col-md2">
+                                    <label class="layui-form-label">{{ form.pages.label.text }}</label>
+                                    <div class="layui-input-block">
+                                        {{ form.pages(class="layui-input") }}
+                                    </div>
+                                </div>
+                                <div class="layui-col-md4">
+                                    <div class="layui-input-block">
+                                        {{ form.submit(class="layui-btn layui-btn-green") }}
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 进度显示 -->
+                <div class="layui-card mt10" id="progress-card" style="display: none;">
+                    <div class="layui-card-header">采集进度</div>
+                    <div class="layui-card-body">
+                        <div class="layui-progress layui-progress-big" lay-filter="progress-filter">
+                            <div class="layui-progress-bar layui-bg-green" lay-percent="0%"></div>
+                        </div>
+                        <p class="layui-text-center mt10" id="progress-text">正在采集数据...</p>
+                        <div class="layui-progress layui-progress-big" lay-filter="page-progress" style="margin-top: 20px;">
+                            <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>
+                        </div>
+                        <p class="layui-text-center mt5" id="page-progress-text">正在采集第 1 页...</p>
+                    </div>
+                </div>
+
+                <!-- 抓取结果 -->
+                {% if keyword and results %}
+                    <div class="layui-card mt10">
+                        <div class="layui-card-header">
+                            <div class="layui-row">
+                                <div class="layui-col-md8">
+                                    搜索结果："{{ keyword }}" (共 {{ results|length }} 条)
+                                </div>
+                                <div class="layui-col-md4 text-right">
+                                    <button class="layui-btn layui-btn-blue" id="save-selected">保存选中到数据库</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-card-body">
+                            <div class="layui-row layui-col-space10">
+                                {% for news in results %}
+                                    <div class="layui-col-md3">
+                                        <div class="layui-card">
+                                            <div class="layui-card-body p0">
+                                                <!-- 复选框 -->
+                                                <div class="checkbox-container">
+                                                    <input type="checkbox" name="news-checkbox" lay-skin="primary" data-id="{{ loop.index0 }}">
+                                                </div>
+                                                
+                                                <!-- 封面图片 -->
+                                                {% if news.cover %}
+                                                    <div class="cover-container">
+                                                        <a href="{{ news.original_url }}" target="_blank">
+                                                            <img src="{{ news.cover }}" alt="封面" class="news-cover">
+                                                        </a>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="cover-container cover-placeholder">
+                                                        <i class="layui-icon layui-icon-picture"></i>
+                                                    </div>
+                                                {% endif %}
+                                                
+                                                <!-- 新闻内容 -->
+                                                <div class="news-content">
+                                                    <h4 class="news-title">
+                                                        <a href="{{ news.original_url }}" target="_blank" title="{{ news.title }}">
+                                                            {{ news.title | truncate(50) }}
+                                                        </a>
+                                                    </h4>
+                                                    <p class="news-source">{{ news.source }}</p>
+                                                    <!-- 不再显示摘要 -->
+                                                </div>
+                                                
+                                                <!-- 操作按钮 -->
+                                                <div class="news-actions">
+                                                    <!-- 深度采集状态 -->
+                                                    <span class="deep-crawl-status layui-badge layui-bg-blue">未深度采集</span>
+                                                    
+                                                    <!-- 深度采集按钮 -->
+                                                    <button class="layui-btn layui-btn-xs layui-btn-normal deep-crawl-btn" data-url="{{ news.original_url }}">
+                                                        深度采集
+                                                    </button>
+                                                    
+                                                    <!-- 单个保存按钮 -->
+                                                    <button class="layui-btn layui-btn-xs layui-btn-warm save-single-btn" data-index="{{ loop.index0 }}">
+                                                        保存到数据库
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    <style>
+        .checkbox-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        
+        .cover-container {
+            position: relative;
+            height: 150px;
+            overflow: hidden;
+        }
+        
+        .cover-placeholder {
+            background-color: #f2f2f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 36px;
+        }
+        
+        .news-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        
+        .news-cover:hover {
+            transform: scale(1.1);
+        }
+        
+        .news-content {
+            padding: 10px;
+        }
+        
+        .news-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            line-height: 1.4;
+            height: 45px;
+            overflow: hidden;
+        }
+        
+        .news-title a {
+            color: #333;
+        }
+        
+        .news-title a:hover {
+            color: #1890ff;
+        }
+        
+        .news-source {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        /* 不再使用摘要样式 */
+        
+        .news-actions {
+            padding: 0 10px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .deep-crawl-status {
+            font-size: 12px;
+        }
+        
+        .p0 {
+            padding: 0;
+        }
+        
+        .mb10 {
+            margin-bottom: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // 初始化layui组件
+        layui.use(['form', 'element', 'layer'], function() {
+            var form = layui.form;
+            var element = layui.element;
+            var layer = layui.layer;
+            
+            // 表单验证
+            form.verify({
+                keyword: function(value) {
+                    if (value.length < 1) {
+                        return '请输入搜索关键字';
+                    }
+                }
+            });
+            
+            // 表单提交事件
+            form.on('submit', function(data) {
+                // 显示进度条
+                $('#progress-card').show();
+                
+                // 初始化进度
+                var totalProgress = 0;
+                var pageProgress = 0;
+                var totalPages = parseInt($('#pages').val());
+                var perPageProgress = 100 / totalPages;
+                
+                // 模拟进度更新
+                var progressInterval = setInterval(function() {
+                    // 更新总进度
+                    totalProgress += 1;
+                    element.progress('progress-filter', totalProgress + '%');
+                    
+                    // 更新页面进度
+                    pageProgress += 2;
+                    if (pageProgress > 100) {
+                        pageProgress = 0;
+                    }
+                    element.progress('page-progress', pageProgress + '%');
+                    
+                    // 更新进度文本
+                    $('#progress-text').text('正在采集数据... (' + totalProgress + '%)');
+                    
+                    // 当进度达到100%时，停止更新
+                    if (totalProgress >= 100) {
+                        clearInterval(progressInterval);
+                        $('#progress-text').text('采集完成！');
+                    }
+                }, 200);
+                
+                // 允许表单提交
+                return true;
+            });
+            
+            // 深度采集按钮点击事件
+            $('.deep-crawl-btn').click(function() {
+                var url = $(this).data('url');
+                var statusElement = $(this).prev('.deep-crawl-status');
+                var button = $(this);
+                
+                // 更新状态为正在采集
+                statusElement.text('正在深度采集...');
+                statusElement.removeClass('layui-bg-blue layui-bg-green layui-bg-red');
+                statusElement.addClass('layui-bg-orange');
+                button.text('采集ing...');
+                button.prop('disabled', true);
+                
+                // 调用深度采集API
+                fetch('/deep_crawl', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({url: url})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // 更新状态为已深度采集
+                        statusElement.text('已深度采集');
+                        statusElement.removeClass('layui-bg-blue layui-bg-orange layui-bg-red');
+                        statusElement.addClass('layui-bg-green');
+                        button.text('查看详情');
+                        
+                        // 绑定查看详情事件
+                        button.off('click').click(function() {
+                            // 显示深度采集详情
+                            layer.open({
+                                type: 1,
+                                title: '深度采集详情',
+                                content: '<div style="padding: 20px;"><h3>' + data.data.title + '</h3><p>URL: ' + data.data.url + '</p><p>内容长度: ' + data.data.content.length + ' 字符</p><p>图片数量: ' + data.data.images.length + '</p></div>',
+                                area: ['80%', '80%']
+                            });
+                        });
+                    } else {
+                        // 采集失败
+                        statusElement.text('深度采集失败');
+                        statusElement.removeClass('layui-bg-blue layui-bg-green layui-bg-orange');
+                        statusElement.addClass('layui-bg-red');
+                        button.text('重新采集');
+                        button.prop('disabled', false);
+                    }
+                })
+                .catch(error => {
+                    console.error('深度采集失败:', error);
+                    statusElement.text('深度采集失败');
+                    statusElement.removeClass('layui-bg-blue layui-bg-green layui-bg-orange');
+                    statusElement.addClass('layui-bg-red');
+                    button.text('重新采集');
+                    button.prop('disabled', false);
+                });
+            });
+            
+            // 保存选中按钮点击事件
+            $('#save-selected').click(function() {
+                var selectedItems = [];
+                var selectedData = [];
+                
+                $('input[name="news-checkbox"]:checked').each(function() {
+                    var index = $(this).data('id');
+                    selectedItems.push(index);
+                    
+                    // 获取对应的数据
+                    var card = $(this).closest('.layui-card');
+                    var data = {
+                        title: card.find('.news-title a').text().trim(),
+                        cover: card.find('.news-cover').attr('src'),
+                        original_url: card.find('.deep-crawl-btn').data('url'),
+                        source: card.find('.news-source').text().trim(),
+                        depth_crawled: card.find('.deep-crawl-status').hasClass('layui-bg-green')
+                    };
+                    selectedData.push(data);
+                });
+                
+                if (selectedItems.length === 0) {
+                    layer.msg('请选择要保存的数据', {icon: 2});
+                    return;
+                }
+                
+                // 显示保存确认
+                layer.confirm('确定要保存选中的' + selectedItems.length + '条数据到数据库吗？', {
+                    btn: ['确定', '取消']
+                }, function(index) {
+                    // 显示加载提示
+                    var loading = layer.load(2, {shade: [0.5, '#393D49']});
+                    
+                    // 调用保存API
+                    fetch('/save_crawl_data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({data: selectedData})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        layer.close(loading);
+                        if (data.success) {
+                            layer.msg('成功保存 ' + data.saved_count + ' 条数据到数据库!', {icon: 1});
+                            // 清空选择状态
+                            $('input[name="news-checkbox"]:checked').prop('checked', false);
+                            form.render('checkbox');
+                        } else {
+                            layer.msg('保存失败: ' + (data.error || '未知错误'), {icon: 2});
+                        }
+                    })
+                    .catch(error => {
+                        layer.close(loading);
+                        layer.msg('保存过程中发生错误', {icon: 2});
+                    });
+                    
+                    layer.close(index);
+                });
+            });
+            
+            // 单个保存按钮点击事件
+            $('.save-single-btn').click(function() {
+                var index = $(this).data('index');
+                var button = $(this);
+                var card = button.closest('.layui-card');
+                
+                // 构建数据对象
+                var data = {
+                    title: card.find('.news-title a').text().trim(),
+                    cover: card.find('.news-cover').attr('src'),
+                    original_url: card.find('.deep-crawl-btn').data('url'),
+                    source: card.find('.news-source').text().trim(),
+                    depth_crawled: card.find('.deep-crawl-status').hasClass('layui-bg-green')
+                };
+                
+                // 显示加载提示
+                var loading = layer.load(2, {shade: [0.5, '#393D49']});
+                
+                // 调用保存API
+                fetch('/save_crawl_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({data: [data]})
+                })
+                .then(response => response.json())
+                .then(result => {
+                    layer.close(loading);
+                    if (result.success) {
+                        layer.msg('数据已成功保存到数据库!', {icon: 1});
+                        // 更新按钮状态
+                        button.text('已保存');
+                        button.prop('disabled', true);
+                        button.addClass('layui-btn-disabled');
+                    } else if (result.success && result.saved_count === 0) {
+                        layer.msg('该数据已存在于数据库中', {icon: 0});
+                        button.text('已存在');
+                        button.prop('disabled', true);
+                        button.addClass('layui-btn-disabled');
+                    } else {
+                        layer.msg('保存失败: ' + (result.error || '未知错误'), {icon: 2});
+                    }
+                })
+                .catch(error => {
+                    layer.close(loading);
+                    layer.msg('保存过程中发生错误', {icon: 2});
+                });
+            });
+        });
+    </script>
+{% endblock %}
