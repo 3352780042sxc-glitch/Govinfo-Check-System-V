@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-WTF
+python-dotenv
+Flask-Login
+Flask-Bcrypt
+requests
+beautifulsoup4
+lxml
